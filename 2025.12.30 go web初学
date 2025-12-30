@@ -1,0 +1,58 @@
+今天写了一点go中的web服务，感觉还可以，但是一涉及到结构体之间的调用和routine以及读写锁，就感觉理解起来有点困难，主要还是不熟练吧，但是具体对于每个模块实现了什么事情我还是清楚的，下面讲一讲今天的收获。
+
+1.关于怎么开启一个web服务？
+go里面有十分成熟且易用的web服务包htp/net.
+比如说我要在本地开启一个web网页，就可以调用这个函数:
+http.ListenAndServe()。
+这个函数里面有两个参数，第一个是网页的地址，第二个是一个回调函数。
+目前我只学习到了最简单的部分，即http.ListenAndServe("localhost:8000",nil),这样就在localhost:8000这个地方创建了一个网页。
+那么怎么判断这个网页创建是否成功呢，我们需要传入一个参数
+
+即err :=http.ListenAndServe("localhost:8000",nil)  
+  if err != nil {
+  		fmt.Println("服务器启动失败", err)
+  	}
+这样就开启了一个最简单的web服务。
+
+2.怎么在我们自己的web上加点东西？
+我们平时所接触的网页下都会有很多子服务，比如baidu.com/test/hello 这种，那么我们怎么在当前的页面下添加这样的路径呢？
+go为我们提供了很简单的函数，http.HandleFunc()
+这个函数有两个要传入的参数，一个是这个页面的路径，比如"/test"，另一个是一个回调函数，这个函数要实现的是这个页面下的网站的功能。
+我们可以这么写一个简单的欢迎页面:
+http.HandleFunc("/",homeHandler)
+http.HandleFunc("/hello",helloHandler)
+这样我们在访问诸如"localhost:8000"以及"localhost:8000/hello"下会有新的页面，接下来我们来编写回调函数，就是当前页面下实现的功能。
+首先我们来写主页面的
+
+func homeHandler(w,http.ResponseWriter, r *http.Request) {
+w.Header().Set("Content-Type", "text/html; charset=utf-8")
+html := `
+<h1>这是我的第一个web程序<h1>
+<a href="/hello">访问hello页面</a><br>
+`
+fmt.Fprint(w,html)
+}<>
+
+对于上述代码来说，r是用户的请求，就好比餐厅里的客人点菜；w是我们的相应，要为用户上什么菜。接着第一行代码实现了一个网页的定义，意思是我们要使用html语言来写当前的页面，编码采用的是utf-8
+对于html来说，首先这类特殊的语言都得放在``里面，json的也是这样的。然后<h1><h1>就是第一个大标题，同理也会有h2 h3 h4。<p></p>就是写一段文字然后<a href=></a>就是提供一个链接，点击就能转到链接所在的页面。<br>就是换行
+当然也有一种更加有结构化的写法
+<p>API 端点: </p>
+	<ul>
+	<li><a href="/api/tasks">GET /api/tasks - 获取所有任务</a></li>
+	</ul>
+这就是关于html的知识。
+然后是hello页面的写法
+func helloHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	fmt.Fprintf(w, "<h1>Hello Go Web!<h1><p>请求方法: %s</p>", r.Method)
+	fmt.Fprintf(w, "<h1>Hello Go Web!<h1><p>用户信息: %s</p>", r.Header.Get("User-Agent"))
+}
+也是类似的，不过我们看到我们可以在接收端对用户发来的信息做解析，比如r.Method返回的是用户的请求方式，我的结果是Get，然后也可以查看用户的浏览器信息。
+
+这里涉及到Fprint和Fprintf之间的区别。我查了下，前者是简单的字符串拼接，后者有点像c里面的printf需要加占位符，更加富有格式化。
+后续还涉及到了存储和读写锁这些东西，虽然抄完了，但是我也没看懂，还得消化一下。
+
+
+
+
+
