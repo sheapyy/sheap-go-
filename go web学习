@@ -74,6 +74,7 @@ func helloHandler(w http.ResponseWriter, r *http.Request) {
 json.NewEncoder().Encode()和json.NewDecoder().Decode()的用法
 先说编码，目前来说我所接触到的地方，通常都是在web服务中的回调函数部分使用，NewEncoder()括号里面放的就是 w http.ResponseWriter，然后Encode()括号里面放带`json:""`的结构体，这样就能将结构体中的内容转换为字符串呈现在web页面上，编码似乎是不需要修改原来的结构体的，所以不需要指针指向。
 再说解码，解码应该是用来处理用户的请求的。比如clinet端返回一个修改后的任务，然后在回调函数中就是指向http.Request的指针r就是要去接受这个请求，所以NewDecoder()中是r.Body，然后Decode()中是指向传入的结构体的指针，就可以对这个传入的结构体做一些修改和读取的操作。
+所以总而言之，编码操作是将结构体转换为json字符串，最终在服务端上向用户呈现出来；解码操作是将json字符串转换为结构体，然后修改数据库里面的数据
 
 
 
