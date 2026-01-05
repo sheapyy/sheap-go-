@@ -76,6 +76,20 @@ json.NewEncoder().Encode()和json.NewDecoder().Decode()的用法
 再说解码，解码应该是用来处理用户的请求的。比如clinet端返回一个修改后的任务，然后在回调函数中就是指向http.Request的指针r就是要去接受这个请求，所以NewDecoder()中是r.Body，然后Decode()中是指向传入的结构体的指针，就可以对这个传入的结构体做一些修改和读取的操作。
 所以总而言之，编码操作是将结构体转换为json字符串，最终在服务端上向用户呈现出来；解码操作是将json字符串转换为结构体，然后修改数据库里面的数据
 
+2026.1.5
+
+今天让ai写了个前端，然后我这边用后端。马上要开始搞数据库连接了，但是今天没学习到什么新东西，
+只学到了前端页面在后端怎么写，其实非常简单。
+func frontendHandler(w http.ResponseWriter, r *http.Request) {
+	if r.URL.Path != "/" {
+		http.NotFound(w, r)
+		return
+	}
+	http.ServeFile(w, r, "./static/index.html")
+}
+关于html和java的部分我没怎么看，我觉得这不是重点，以后工作了应该就会学到了。
+明天的数据库是重头戏，得认真学。
+md今天这b课题，真难搞，不过这东西就是斗争，失败，再斗争，再失败，再斗争，直至成功的过程。
 
 
 
