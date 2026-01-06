@@ -91,6 +91,63 @@ func frontendHandler(w http.ResponseWriter, r *http.Request) {
 明天的数据库是重头戏，得认真学。
 md今天这b课题，真难搞，不过这东西就是斗争，失败，再斗争，再失败，再斗争，直至成功的过程。
 
+2025.1.6
+
+又是燃尽的一天，探索了一天的优化模型没有出一个挺好的结果，不过已经排了很多个坑了，我感觉胜利就在眼前了，再坚持一下，天快亮了。
+
+然后步入正题，说数据库在go里面的调用。
+首先我们先在sql里面配置好要使用的数据库，这里就不再赘述了。
+然后在go里面要设置一个指向你的 数据库的指针
+var db *sql.DB 这是个全局指针，用这个操作数据库
+那么怎么让这个指向你的数据库呢，通过下面这个函数
+dsn := "root:123456@tcp(127.0.0.1:3306)/task_manager?parseTime=true&charset=utf8mb4"
+格式为 用户名:密码@tcp(数据库端口)/数据库名字
+db, err = sql.Open("mysql", dsn)
+注意数据库随时关闭连接
+defer db.Close()
+为了节省效率，不要一个一个连接，每个用户用tcp连接很慢，要放在一个连接池里，才能节省速度。
+db.SetMaxOpenConns(25)                 //最大连接次数
+db.SetMaxIdleConns(5)                  //最大空闲连接数
+db.SetConnMaxLifetime(5 * time.Minute) //连接最大生命周期
+然后数据库中的内容怎么读呢，我们需要写sql的脚本
+比如
+query := "SELECT id, title, description, completed, created_at, updated_at FROM tasks ORDER BY id DESC"
+rows, err := db.Query(query) 用db.Query()去读
+在一些增删改查的程序中需要用到参数，我们在query中用?代表占位符
+query := "SELECT id, title, description, completed, created_at, updated_at FROM tasks WHERE id = ?"
+row := db.QueryRow(query, id)
+query和queryrow区别？前者是查询多行，后者是一行。
+这样就存储好了，我们还需要读取到具体的每一个元素是什么，利用
+for rows.Next() {
+		var task Task
+		err := rows.Scan(
+			&task.ID,
+			&task.Title,
+			&task.Description,
+			&task.Completed,
+			&task.CreatedAt,
+			&task.UpdatedAt,
+		)
+		if err != nil {
+			return nil, err
+		}
+		tasks = append(tasks, task)
+	}
+scan()用于存储具体的元素
+然后查询的时候用query，等到增删改的时候就要用db.exec()
+query := "DELETE FROM tasks WHERE id = ?"
+result, err := db.Exec(query, id)
+判断行是不是空行rowsAffected()
+rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return nil
+	}
+
+困了，明天还得搞Gin框架重构代码，这是真正的重头戏
+
 
 
 
